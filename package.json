@@ -1,0 +1,22 @@
+{
+    "name": "markdown-note-taking-api",
+    "version": "1.0.0",
+    "description": "https://roadmap.sh/projects/markdown-note-taking-app",
+    "main": "./src/app.ts",
+    "scripts": {
+        "start": "nodemon ./src/app.ts"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "dotenv": "^16.4.7",
+        "express": "^4.21.2"
+    },
+    "devDependencies": {
+        "@types/express": "^5.0.0",
+        "nodemon": "^3.1.9",
+        "tsx": "^4.19.2",
+        "typescript": "^5.7.3"
+    }
+}
