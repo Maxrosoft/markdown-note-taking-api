@@ -1,7 +1,10 @@
 import { Request, Response } from "express";
 import axios from "axios";
 import "dotenv/config";
+import { Converter } from "showdown";
 import Note from "../models/Note";
+
+const converter: Converter = new Converter();
 
 function applyCorrections(text: string, corrections: any[]): string {
     let correctedText = text;
@@ -25,12 +28,13 @@ function applyCorrections(text: string, corrections: any[]): string {
 class NotesController {
     async checkGrammar(req: Request, res: Response, next) {
         try {
+            res.setHeader("Content-Type", "application/json");
             const { text } = req.body;
 
             if (!text || typeof text !== "string") {
                 return res
                     .status(400)
-                    .json({ error: "Invalid input, 'text' is required." });
+                    .json({ error: "Invalid input, 'text' is required" });
             }
 
             const response: any = await axios.post(
@@ -66,18 +70,19 @@ class NotesController {
 
     async saveNote(req: Request, res: Response, next) {
         try {
+            res.setHeader("Content-Type", "application/json");
             const { title, content } = req.body;
 
             if (!title || typeof title !== "string") {
                 return res
                     .status(400)
-                    .json({ error: "Invalid input, 'title' is required." });
+                    .json({ error: "Invalid input, 'title' is required" });
             }
 
             if (!content || typeof content !== "string") {
                 return res
                     .status(400)
-                    .json({ error: "Invalid input, 'content' is required." });
+                    .json({ error: "Invalid input, 'content' is required" });
             }
 
             const createdNote = await Note.create({ title, content });
@@ -95,6 +100,7 @@ class NotesController {
 
     async listSavedNotes(req: Request, res: Response, next) {
         try {
+            res.setHeader("Content-Type", "application/json");
             const notes: any[] = await Note.find().exec();
 
             res.send(
@@ -106,6 +112,30 @@ class NotesController {
                     };
                 })
             );
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async renderHtml(req: Request, res: Response, next) {
+        try {
+            res.setHeader("Content-Type", "application/json");
+            const { noteId } = req.params;
+
+            const noteToRender = await Note.findById(noteId);
+
+            if (!noteToRender) {
+                return res.status(404).json({ error: "Note not found" });
+            }
+
+            const rendered: string = converter.makeHtml(
+                noteToRender.content as string
+            );
+
+            res.send({
+                id: noteToRender._id,
+                html: rendered,
+            });
         } catch (error) {
             next(error);
         }
