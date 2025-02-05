@@ -1,6 +1,7 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import axios from "axios";
 import "dotenv/config";
+import Note from "../models/Note";
 
 function applyCorrections(text: string, corrections: any[]): string {
     let correctedText = text;
@@ -22,7 +23,7 @@ function applyCorrections(text: string, corrections: any[]): string {
 }
 
 class NotesController {
-    async checkGrammar(req: Request, res: Response, next: NextFunction) {
+    async checkGrammar(req: Request, res: Response, next) {
         try {
             const { text } = req.body;
 
@@ -58,6 +59,53 @@ class NotesController {
                 corrected_text: applyCorrections(text, corrections),
                 errors: corrections,
             });
+        } catch (error) {
+            return next(error);
+        }
+    }
+
+    async saveNote(req: Request, res: Response, next) {
+        try {
+            const { title, content } = req.body;
+
+            if (!title || typeof title !== "string") {
+                return res
+                    .status(400)
+                    .json({ error: "Invalid input, 'title' is required." });
+            }
+
+            if (!content || typeof content !== "string") {
+                return res
+                    .status(400)
+                    .json({ error: "Invalid input, 'content' is required." });
+            }
+
+            const createdNote = await Note.create({ title, content });
+
+            if (createdNote) {
+                res.send({
+                    message: "Note saved successfully",
+                    note_id: createdNote._id,
+                });
+            }
+        } catch (error) {
+            return next(error);
+        }
+    }
+
+    async listSavedNotes(req: Request, res: Response, next) {
+        try {
+            const notes: any[] = await Note.find().exec();
+
+            res.send(
+                notes.map((note) => {
+                    return {
+                        id: note._id,
+                        title: note.title,
+                        createdAt: note.createdAt,
+                    };
+                })
+            );
         } catch (error) {
             next(error);
         }

@@ -5,5 +5,7 @@ const notesRouter: Router = Router();
 const notesController: NotesController = new NotesController();
 
 notesRouter.post("/notes/check-grammar", notesController.checkGrammar);
+notesRouter.post("/notes", notesController.saveNote);
+notesRouter.get("/notes", notesController.listSavedNotes);
 
 export default notesRouter;
