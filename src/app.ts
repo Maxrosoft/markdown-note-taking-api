@@ -9,6 +9,10 @@ const MONGO_URI: string = process.env.MONGO_URI || "mongodb://localhost:27017/";
 
 app.use(express.json());
 app.use("/api", notesRouter);
+app.use((err, req, res, next) => {
+    console.error(err);
+    res.status(500).send({ error: err.message });
+});
 
 mongoose
     .connect(MONGO_URI)
